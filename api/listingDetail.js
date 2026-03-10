@@ -3,12 +3,11 @@ import Listing from "../models/Listing.js"
 import User from "../models/User.js"
 import authMiddleware from "../middleware/auth.js"
 
-connectDB() // reuse cached DB connection
+// Connect to DB once (reused in serverless)
+connectDB()
 
 export default async function handler(req, res) {
-  const { method } = req
-
-  if (method !== "GET") {
+  if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" })
   }
 
@@ -16,14 +15,13 @@ export default async function handler(req, res) {
     const { id } = req.query
     if (!id) return res.status(400).json({ error: "Listing ID is required" })
 
-    // Find the listing
+    // Find listing by ID
     const listing = await Listing.findById(id)
     if (!listing) return res.status(404).json({ error: "Listing not found" })
 
-    // Default: user not logged in
+    // Optional: check if logged-in user saved this listing
     let userData = { saved: false }
 
-    // If user has a token, check if this listing is saved by the user
     if (req.headers.authorization?.startsWith("Bearer ")) {
       await new Promise((resolve, reject) => {
         authMiddleware(req, res, (err) => {
