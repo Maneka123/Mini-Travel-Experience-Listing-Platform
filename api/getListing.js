@@ -1,34 +1,36 @@
-// api/getListing.js
+// api/getListings.js
 import connectDB from "../config/db.js"
 import Listing from "../models/Listing.js"
-import User from "../models/User.js"
 import authMiddleware from "../middleware/auth.js"
 
-connectDB()
+connectDB() // reuse cached DB connection
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" })
-
-  const { id } = req.query
-  if (!id) return res.status(400).json({ error: "Listing ID is required" })
+  const { method, query } = req
 
   try {
-    const listing = await Listing.findById(id)
-    if (!listing) return res.status(404).json({ error: "Listing not found" })
+    if (method === "GET") {
+      const { mine } = query // ?mine=true for logged-in user's listings
 
-    let userData = { saved: false }
+      if (mine === "true") {
+        // Require authentication
+        await new Promise((resolve, reject) => {
+          authMiddleware(req, res, (err) => (err ? reject(err) : resolve()))
+        })
 
-    if (req.headers.authorization?.startsWith("Bearer ")) {
-      await new Promise((resolve, reject) =>
-        authMiddleware(req, res, (err) => (err ? reject(err) : resolve()))
-      )
-      const user = await User.findById(req.user.id)
-      if (user && user.saved.includes(listing._id)) userData.saved = true
+        // Fetch listings by logged-in user
+        const userListings = await Listing.find({ whoCreated: req.user.id })
+        return res.status(200).json({ listings: userListings })
+      } else {
+        // Fetch all listings
+        const allListings = await Listing.find()
+        return res.status(200).json({ listings: allListings })
+      }
     }
 
-    res.status(200).json({ listing, userData })
+    return res.status(405).json({ error: "Method not allowed" })
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: "Server error" })
+    console.error("GetListings Error:", err)
+    return res.status(500).json({ error: "Server error" })
   }
 }
