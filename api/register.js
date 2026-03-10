@@ -1,28 +1,25 @@
-require("dotenv").config();
-const connectDB = require("../config/db");
-const User = require("../models/User");
-const bcrypt = require("bcrypt");
+// pages/api/register.js
+import connectDB from "../config/db";
+import User from "../models/User";
+import bcrypt from "bcrypt";
 
-// Connect to MongoDB once
+// Connect to MongoDB once globally
 connectDB();
 
 export default async function handler(req, res) {
-  const allowedOrigin = "https://travel-app-frontend-phi.vercel.app"; // your frontend URL
+  // Allow your frontend domain here
+  const allowedOrigin = "https://travel-app-frontend-phi.vercel.app";
 
-  // Handle OPTIONS preflight
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    return res.status(200).end();
-  }
-
-  // Set headers for actual request
+  // Always set CORS headers
   res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Handle preflight request
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    return res.status(204).end(); // No content
+  }
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -54,12 +51,12 @@ export default async function handler(req, res) {
       saved: [],
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "User registered successfully",
       user: { id: user._id, name: user.name, email: user.email },
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 }
