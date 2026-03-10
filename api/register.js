@@ -1,22 +1,19 @@
-require("dotenv").config()           // must be first
-const express = require("express")
-const bcrypt = require("bcrypt")
-const User = require("../models/User")
+require("dotenv").config()
 const connectDB = require("../config/db")
+const User = require("../models/User")
+const bcrypt = require("bcrypt")
 
-const app = express()
-
-app.use(express.json())
-
-// Connect to MongoDB
+// Connect to MongoDB once
 connectDB()
 
-// REGISTER endpoint
-app.post("/api/register", async (req, res) => {
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" })
+  }
+
   try {
     const { name, email, password } = req.body
 
-    // 1️⃣ Validate inputs
     if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields are required" })
     }
@@ -25,16 +22,13 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" })
     }
 
-    // 2️⃣ Check if email already exists
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return res.status(400).json({ error: "Email already registered" })
     }
 
-    // 3️⃣ Hash password
     const passwordHash = await bcrypt.hash(password, 10)
 
-    // 4️⃣ Create user
     const user = await User.create({
       name,
       email,
@@ -43,7 +37,6 @@ app.post("/api/register", async (req, res) => {
       saved: []
     })
 
-    // 5️⃣ Send success response (safe!)
     res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -52,11 +45,8 @@ app.post("/api/register", async (req, res) => {
         email: user.email
       }
     })
-
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: "Server error" })
   }
-})
-
-module.exports = app
+}
