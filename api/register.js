@@ -8,7 +8,7 @@ connectDB();
 
 export default async function handler(req, res) {
   // Allow your frontend domain here
-  const allowedOrigin = "https://travel-app-frontend-phi.vercel.app";
+  const allowedOrigin = "https://mini-travel-app-frontend.vercel.app";
 
   // Always set CORS headers
   res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
