@@ -8,18 +8,22 @@ const jwt = require("jsonwebtoken");
 connectDB();
 
 export default async function handler(req, res) {
-  // 1️⃣ Handle preflight OPTIONS request
+  const allowedOrigin = "https://travel-app-frontend-phi.vercel.app"; // your frontend URL
+
+  // Handle OPTIONS preflight
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*"); // allow all origins, or restrict to your frontend
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
     return res.status(200).end();
   }
 
-  // 2️⃣ Set CORS headers for actual POST request
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  // Set headers for actual request
+  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -32,27 +36,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // 1️⃣ Find user by email
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
-    // 2️⃣ Compare password
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) return res.status(400).json({ error: "Invalid credentials" });
 
-    // 3️⃣ Create JWT
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    // 4️⃣ Update last login
     user.lastLogin = new Date();
     await user.save();
 
-    // 5️⃣ Set cookie (httpOnly)
-    res.setHeader("Set-Cookie", `token=${token}; HttpOnly; Path=/; Max-Age=${7*24*60*60}`);
+    res.setHeader(
+      "Set-Cookie",
+      `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}`
+    );
 
     res.status(200).json({ message: "Login successful", token });
   } catch (err) {

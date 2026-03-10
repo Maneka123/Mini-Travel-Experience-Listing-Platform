@@ -7,18 +7,22 @@ const bcrypt = require("bcrypt");
 connectDB();
 
 export default async function handler(req, res) {
-  // 1️⃣ Handle preflight requests (for CORS)
+  const allowedOrigin = "https://travel-app-frontend-phi.vercel.app"; // your frontend URL
+
+  // Handle OPTIONS preflight
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*"); // allow all origins (or restrict to your frontend domain)
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
     return res.status(200).end();
   }
 
-  // 2️⃣ Set CORS headers for actual request
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  // Set headers for actual request
+  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -47,16 +51,12 @@ export default async function handler(req, res) {
       email,
       passwordHash,
       lastLogin: new Date(),
-      saved: []
+      saved: [],
     });
 
     res.status(201).json({
       message: "User registered successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
-      }
+      user: { id: user._id, name: user.name, email: user.email },
     });
   } catch (error) {
     console.error(error);
