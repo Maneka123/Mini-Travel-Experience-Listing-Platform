@@ -1,21 +1,25 @@
-// api/listingDetail.js
+// api/getListing.js
 import connectDB from "../config/db.js"
 import Listing from "../models/Listing.js"
 import User from "../models/User.js"
 import authMiddleware from "../middleware/auth.js"
 
-connectDB()
+connectDB() // reuse cached MongoDB connection
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" })
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" })
+  }
 
   try {
     const { id } = req.query
     if (!id) return res.status(400).json({ error: "Listing ID is required" })
 
+    // Find the listing in DB
     const listing = await Listing.findById(id)
     if (!listing) return res.status(404).json({ error: "Listing not found" })
 
+    // Check if user has saved the listing (optional)
     let userData = { saved: false }
 
     if (req.headers.authorization?.startsWith("Bearer ")) {
@@ -24,12 +28,17 @@ export default async function handler(req, res) {
       })
 
       const user = await User.findById(req.user.id)
-      if (user && user.saved.includes(listing._id)) userData.saved = true
+      if (user && user.saved.includes(listing._id)) {
+        userData.saved = true
+      }
     }
 
-    res.status(200).json({ listing, userData })
+    res.status(200).json({
+      listing,
+      userData
+    })
   } catch (err) {
-    console.error("ListingDetail Error:", err)
+    console.error("GetListing Error:", err)
     res.status(500).json({ error: "Server error" })
   }
 }
