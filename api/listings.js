@@ -5,13 +5,13 @@ import authMiddleware from "../middleware/auth.js";
 connectDB();
 
 export default async function handler(req, res) {
-
-  // CORS headers
+  // ✅ Always set CORS first
   const allowedOrigins = [
     "http://localhost:3000",
     "https://travel-app-frontend-phi.vercel.app",
     "https://mini-travel-app-frontend.vercel.app"
   ];
+
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -20,15 +20,20 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
 
+  // ✅ Handle preflight
   if (req.method === "OPTIONS") return res.status(200).end();
+
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
   try {
     // ✅ Auth check
     await new Promise((resolve, reject) => {
       authMiddleware(req, res, (err) => {
-        if (err) reject(err);
-        else resolve();
+        if (err) {
+          // Return 401 instead of crashing
+          res.status(401).json({ error: "Unauthorized" });
+          return reject(err);
+        } else resolve();
       });
     });
 
@@ -37,6 +42,9 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error("Listings Error:", err);
-    res.status(401).json({ error: "Unauthorized or server error" });
+    // If headers were already sent by authMiddleware, this won't break
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Server error" });
+    }
   }
 }
