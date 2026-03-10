@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 connectDB();
 
 export default async function handler(req, res) {
-  const allowedOrigin = "https://travel-app-frontend-phi.vercel.app"; // your frontend URL
+  const allowedOrigin = "https://mini-travel-app-frontend.vercel.app"; // your frontend URL
 
   // Handle OPTIONS preflight
   if (req.method === "OPTIONS") {
