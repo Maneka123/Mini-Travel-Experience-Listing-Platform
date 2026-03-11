@@ -1,35 +1,33 @@
-require("dotenv").config();
-const connectDB = require("../config/db");
-const User = require("../models/User");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-
-// Connect to MongoDB once
-connectDB();
+// pages/api/login.js
+import connectDB from "../config/db";
+import User from "../models/User";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
-  const allowedOrigin = "https://mini-travel-app-frontend.vercel.app"; // your frontend URL
+  // ----------- CORS Headers -----------
+  res.setHeader("Access-Control-Allow-Origin", "*"); // allow all origins
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
 
-  // Handle OPTIONS preflight
+  // Handle preflight request
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
     return res.status(200).end();
   }
 
-  // Set headers for actual request
-  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-
+  // Only allow POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+  // -------------------------------------
 
   try {
+    // Connect to DB inside the handler
+    await connectDB();
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -42,23 +40,20 @@ export default async function handler(req, res) {
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) return res.status(400).json({ error: "Invalid credentials" });
 
+    // Sign JWT token
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
+    // Update last login
     user.lastLogin = new Date();
     await user.save();
 
-    res.setHeader(
-      "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}`
-    );
-
-    res.status(200).json({ message: "Login successful", token });
+    return res.status(200).json({ message: "Login successful", token });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
+    console.error("LOGIN ERROR:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 }
