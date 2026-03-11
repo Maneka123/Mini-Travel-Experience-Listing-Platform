@@ -3,7 +3,8 @@
 import connectDB from "../config/db";
 import User from "../models/User";
 import bcrypt from "bcrypt";
-
+import cors from "cors";
+app.use(cors());
 // Connect to MongoDB once globally
 connectDB();
 
