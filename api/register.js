@@ -7,20 +7,29 @@ import bcrypt from "bcrypt";
 connectDB();
 
 export default async function handler(req, res) {
-  // Allow your frontend domain here
-  const allowedOrigin = "https://luxury-syrniki-136cab.netlify.app";
 
-  // Always set CORS headers
-  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+  // Allowed frontend domains
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://luxury-syrniki-136cab.netlify.app"
+  ];
+
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
 
   // Handle preflight request
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    return res.status(204).end(); // No content
+    return res.status(200).end();
   }
 
+  // Only allow POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -28,35 +37,48 @@ export default async function handler(req, res) {
   try {
     const { name, email, password } = req.body;
 
+    // Validation
     if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
+      return res.status(400).json({
+        error: "Password must be at least 6 characters"
+      });
     }
 
+    // Check if email exists
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
       return res.status(400).json({ error: "Email already registered" });
     }
 
+    // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
+    // Create user
     const user = await User.create({
       name,
       email,
       passwordHash,
       lastLogin: new Date(),
-      saved: [],
+      saved: []
     });
 
+    // Response
     return res.status(201).json({
       message: "User registered successfully",
-      user: { id: user._id, name: user.name, email: user.email },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
     });
+
   } catch (error) {
-    console.error(error);
+    console.error("Register Error:", error);
     return res.status(500).json({ error: "Server error" });
   }
 }
