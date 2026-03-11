@@ -1,6 +1,6 @@
 # Mini-Travel-Experience-Listing-PlatformProject Overview
 
-This application is a travel listing platform where users can create, browse, and interact with travel listings. It allows users to register, log in, and log out securely. Once logged in, users can:
+This application is a travel listing platform where users can create, browse, and interact with travel listings. It allows users to register, log in, and log out securely. I coded the backend first and deployed all apis on vercel.Next i started coding the frontend and tried to deploy it on netlify and vercel.Once logged in, users can:
 
 1]View all available travel listings.
 
