@@ -2,34 +2,53 @@ import connectDB from "../config/db.js";
 import Listing from "../models/Listing.js";
 import authMiddleware from "../middleware/auth.js";
 import cloudinary from "../config/cloudinary.js";
+import formidable from "formidable";
 
-// Disable default body parser
+// Disable default body parser for file uploads
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req, res) {
-  // CORS
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  // ---------- CORS ----------
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://mini-travel-app-frontend.vercel.app",
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
+    "Authorization, Content-Type"
   );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  // Preflight OPTIONS request
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+  // ----------------------------
 
   try {
     await connectDB();
 
-    // ✅ Auth
+    // Run auth middleware
     await new Promise((resolve, reject) => {
       authMiddleware(req, res, (err) => (err ? reject(err) : resolve()));
     });
+
     if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
-    // Parse multipart form data manually
+    // Parse multipart form data
     const data = await new Promise((resolve, reject) => {
-      const formidable = require("formidable");
       const form = new formidable.IncomingForm();
       form.parse(req, (err, fields, files) => {
         if (err) reject(err);
@@ -44,7 +63,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Upload to Cloudinary if image exists
+    // Upload image to Cloudinary if provided
     let imageUrl = "";
     if (imageFile) {
       const result = await cloudinary.uploader.upload(imageFile.filepath, {
@@ -53,7 +72,7 @@ export default async function handler(req, res) {
       imageUrl = result.secure_url;
     }
 
-    // Save listing
+    // Create listing
     const newListing = await Listing.create({
       title,
       location,
@@ -65,7 +84,9 @@ export default async function handler(req, res) {
       numberOfLikes: 0,
     });
 
-    return res.status(201).json({ message: "Listing created successfully", listing: newListing });
+    return res
+      .status(201)
+      .json({ message: "Listing created successfully", listing: newListing });
   } catch (err) {
     console.error("CREATE LISTING ERROR:", err);
     return res.status(500).json({ error: "Server error", details: err.message });
