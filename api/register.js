@@ -8,10 +8,10 @@ connectDB();
 
 export default async function handler(req, res) {
   // Allow your frontend domain here
-  //const allowedOrigin = "https://mini-travel-app-frontend.vercel.app";
+  const allowedOrigin = "https://luxury-syrniki-136cab.netlify.app";
 
   // Always set CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
