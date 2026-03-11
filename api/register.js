@@ -3,38 +3,31 @@ import connectDB from "../config/db";
 import User from "../models/User";
 import bcrypt from "bcrypt";
 
-// Connect to MongoDB globally
-connectDB();
-
+// Helper: run the API
 export default async function handler(req, res) {
-  // ---------------- CORS ----------------
-  const allowedOrigins = ["http://localhost:5173"];
-  const origin = req.headers.origin;
-
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  } else {
-    res.setHeader("Access-Control-Allow-Origin", "*"); // Optional: allow all
-  }
-
+  // ----------- CORS Headers -----------
+  res.setHeader("Access-Control-Allow-Origin", "*"); // allow all origins
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
   );
-  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   // Handle preflight request
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-  // --------------------------------------
 
+  // Only allow POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+  // -------------------------------------
 
   try {
+    // Connect to DB inside the handler (prevents 500 before headers)
+    await connectDB();
+
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
