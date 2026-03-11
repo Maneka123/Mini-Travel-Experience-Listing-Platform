@@ -4,11 +4,11 @@ import authMiddleware from "../middleware/auth.js";
 import cloudinary from "../config/cloudinary.js";
 import formidable from "formidable";
 
-// Disable default body parser
+// Disable Next.js default body parser for file uploads
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req, res) {
-  // ---------- CORS headers ----------
+  // ---------- CORS ----------
   const allowedOrigins = [
     "http://localhost:5173",
     "https://mini-travel-app-frontend.vercel.app",
@@ -26,26 +26,21 @@ export default async function handler(req, res) {
   );
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  // ✅ Preflight OPTIONS request must end here
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-  // ----------------------------------
+  // ✅ Handle preflight
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
     await connectDB();
 
-    // Auth middleware
+    // ✅ Auth middleware
     await new Promise((resolve, reject) => {
       authMiddleware(req, res, (err) => (err ? reject(err) : resolve()));
     });
+
     if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
-    // Parse form-data with formidable
+    // Parse form-data
     const data = await new Promise((resolve, reject) => {
       const form = new formidable.IncomingForm();
       form.parse(req, (err, fields, files) => {
@@ -61,7 +56,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Upload image to Cloudinary if provided
+    // Upload image to Cloudinary
     let imageUrl = "";
     if (imageFile) {
       const result = await cloudinary.uploader.upload(imageFile.filepath, {
@@ -70,7 +65,7 @@ export default async function handler(req, res) {
       imageUrl = result.secure_url;
     }
 
-    // Save listing to DB
+    // Save listing to MongoDB
     const newListing = await Listing.create({
       title,
       location,
