@@ -2,56 +2,56 @@
 
 This application is a travel listing platform where users can create, browse, and interact with travel listings. It allows users to register, log in, and log out securely. Once logged in, users can:
 
-View all available travel listings.
+1]View all available travel listings.
 
-View listings specifically created by themselves.
+2]View listings specifically created by themselves.
 
-Access a detailed page for each listing to see more information.
+3]Access a detailed page for each listing to see more information.
 
-Create new listings, edit or delete their existing listings.
+4]Create new listings, edit or delete their existing listings.
 
-Search for listings based on keywords or filters.
+5]Search for listings based on keywords or filters.
 
-Like or save listings to a personal collection for future reference.
+6]Like or save listings to a personal collection for future reference.
 
-Remove listings from their saved collection.
+7]Remove listings from their saved collection.
 
 The goal of the application is to provide a smooth and interactive experience for users interested in exploring or sharing travel opportunities.
 
 Tech Stack
 
-Backend: Node.js
+1]Backend: Node.js
 
-Frontend: React
+2]Frontend: React
 
-Database: MongoDB
+3]Database: MongoDB
 
-Image Storage: Cloudinary
+4]Image Storage: Cloudinary
 
 Explanation of Technologies Used
 
-Node.js was chosen for the backend because it allows for fast, scalable server-side operations and is easy to deploy on platforms like Vercel.
+1]Node.js was chosen for the backend because it allows for fast, scalable server-side operations and is easy to deploy on platforms like Vercel.
 
-React was used for building the frontend due to its component-based architecture, which enables a dynamic and responsive user interface.
+2]React was used for building the frontend due to its component-based architecture, which enables a dynamic and responsive user interface.
 
-MongoDB was selected as the database because it is lightweight, flexible, and handles JSON-like documents well, making it ideal for storing listings with varying fields.
+3]MongoDB was selected as the database because it is lightweight, flexible, and handles JSON-like documents well, making it ideal for storing listings with varying fields.
 
-Cloudinary is used to store and serve images efficiently, ensuring that listing images load quickly and reliably.
+4]Cloudinary is used to store and serve images efficiently, ensuring that listing images load quickly and reliably.
 
 Setup Instructions
 
 Initialize the project:
 
-npm init -y
+1]npm init -y
 
 Install required dependencies:
 
-npm install express mongoose bcrypt jsonwebtoken dotenv cors
+2npm install express mongoose bcrypt jsonwebtoken dotenv cors
 Running the Project Locally
 
 To run the project locally:
 
-node index.js
+1]node index.js
 
 Note: The index.js file was removed for deployment on Vercel, so local deployment requires adding this entry point back or adjusting for your deployment environment.
 
@@ -59,34 +59,34 @@ Features Implemented
 
 The application includes the following features:
 
-User Authentication: Users can register, log in, and log out securely.
+1]User Authentication: Users can register, log in, and log out securely.
 
-Listing Management: Users can create, edit, delete, and view listings.
+2]Listing Management: Users can create, edit, delete, and view listings.
 
-Detail Pages: Each listing has a dedicated page showing full details.
+3]Detail Pages: Each listing has a dedicated page showing full details.
 
-Search Functionality: Users can search through listings based on keywords.
+4Search Functionality: Users can search through listings based on keywords.
 
-Interaction with Listings: Users can like and save listings to their profile.
+5Interaction with Listings: Users can like and save listings to their profile.
 
-Saved Listings Management: Users can view and remove listings from their saved collection.
+6]Saved Listings Management: Users can view and remove listings from their saved collection.
 
-Optional features include liking and saving listings, which enhance user engagement and personalization.
+7]Optional features include liking and saving listings, which enhance user engagement and personalization.
 
 Architecture & Key Decisions
 Technology Stack Choices
 
-Node.js was selected for the backend because it is lightweight, efficient, and deployable on free platforms like Vercel.
+1]Node.js was selected for the backend because it is lightweight, efficient, and deployable on free platforms like Vercel.
 
-MongoDB was chosen for the database because it is scalable, schema-less, and well-suited for handling JSON-like travel listings data.
+2]MongoDB was chosen for the database because it is scalable, schema-less, and well-suited for handling JSON-like travel listings data.
 
 Authentication
 
-The application uses JWT (JSON Web Tokens) to authenticate users securely.
+1]The application uses JWT (JSON Web Tokens) to authenticate users securely.
 
-Passwords are hashed using bcrypt to ensure sensitive data is protected.
+2]Passwords are hashed using bcrypt to ensure sensitive data is protected.
 
-An authentication middleware checks the user's login status before allowing access to protected routes such as creating, editing, or deleting listings.
+3]An authentication middleware checks the user's login status before allowing access to protected routes such as creating, editing, or deleting listings.
 
 Travel Listings Storage
 
@@ -111,25 +111,25 @@ Future Improvements
 
 If more time were available, I would focus on:
 
-Developing a more robust and visually appealing user interface.
+1]Developing a more robust and visually appealing user interface.
 
-Adding advanced filtering and sorting options for listings.
+2]Adding advanced filtering and sorting options for listings.
 
-Optimizing performance for a larger dataset.
+3]Optimizing performance for a larger dataset.
 
 Scaling Considerations
 
-If the platform were to handle 10,000 or more travel listings, I would implement the following improvements to enhance performance and user experience:
+1]If the platform were to handle 10,000 or more travel listings, I would implement the following improvements to enhance performance and user experience:
 
-Sharding: Partitioning the MongoDB database across multiple servers to handle large datasets efficiently.
+2]Sharding: Partitioning the MongoDB database across multiple servers to handle large datasets efficiently.
 
-Database Partitioning: Splitting data logically to improve query performance.
+3]Database Partitioning: Splitting data logically to improve query performance.
 
-Pagination: Limiting the number of listings loaded at once to reduce frontend and backend load.
+4]Pagination: Limiting the number of listings loaded at once to reduce frontend and backend load.
 
-Enhanced Search Options: Implementing advanced search filters and indexing to allow users to find listings quickly.
+5]Enhanced Search Options: Implementing advanced search filters and indexing to allow users to find listings quickly.
 
-publicly accessible api endpoints i created are as follows":
+001]publicly accessible api endpoints i created are as follows":
 *register
 https://mini-travel-experience-listing-plat-omega.vercel.app/api/register
 
