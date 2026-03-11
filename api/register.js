@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     // ---------------- CORS ----------------
     const allowedOrigins = [
       "http://localhost:5173",
-      "https://luxury-syrniki-136cab.netlify.app"
+     
     ];
 
     const origin = req.headers.origin;
