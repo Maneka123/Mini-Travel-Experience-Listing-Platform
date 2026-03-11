@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   try {
     await connectDB();
 
-    // ✅ Run auth middleware
+    // ✅ Run auth middleware safely
     await new Promise((resolve, reject) => {
       authMiddleware(req, res, (err) => {
         if (err) reject(err);
@@ -22,6 +22,7 @@ export default async function handler(req, res) {
       });
     });
 
+    // ✅ If user not set by middleware
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized. Please login first." });
     }
@@ -47,6 +48,10 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error("CREATE LISTING ERROR:", err);
+    // ✅ Return 401 for auth errors or 500 for other errors
+    if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Unauthorized. Invalid token." });
+    }
     return res.status(500).json({ error: "Server error", details: err.message });
   }
 }
